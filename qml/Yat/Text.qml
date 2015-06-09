@@ -53,29 +53,6 @@ ObjectDestructItem {
             font.bold: objectHandle.bold
             font.underline: objectHandle.underline
             latin: objectHandle.latin
-
-            onTextChanged: {
-            }
-            SequentialAnimation {
-                running: objectHandle.blinking
-                loops: Animation.Infinite
-                onRunningChanged: {
-                    if (running === false)
-                        textElement.opacity = 1
-                }
-                NumberAnimation {
-                    target: textElement
-                    property: "opacity"
-                    to: 0
-                    duration: 250
-                }
-                NumberAnimation {
-                    target: textElement
-                    property: "opacity"
-                    to: 1
-                    duration: 250
-                }
-            }
         }
     }
 
