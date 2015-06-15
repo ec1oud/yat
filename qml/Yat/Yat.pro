@@ -12,12 +12,14 @@ SOURCES += \
           plugin/object_destruct_item.cpp \
           plugin/mono_text.cpp \
           plugin/yat_extension_plugin.cpp \
+    plugin/terminalmodel.cpp
 
 HEADERS += \
           plugin/terminal_screen.h \
           plugin/object_destruct_item.h \
           plugin/mono_text.h \
           plugin/yat_extension_plugin.h \
+    plugin/terminalmodel.h
 
 OTHER_FILES = \
               qmldir \

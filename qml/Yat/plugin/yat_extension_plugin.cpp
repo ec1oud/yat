@@ -34,6 +34,7 @@
 #include "cursor.h"
 #include "mono_text.h"
 #include "selection.h"
+#include "terminalmodel.h"
 
 static const struct {
     const char *type;
@@ -55,6 +56,8 @@ void YatExtensionPlugin::registerTypes(const char *uri)
     qmlRegisterType<Text>();
     qmlRegisterType<Cursor>();
     qmlRegisterType<Selection>();
+qDebug() << "registering TerminalModel";
+    qmlRegisterType<TerminalModel>("Yat", 1, 0, "TerminalModel");
 
     const QString filesLocation = baseUrl().toString();
     for (int i = 0; i < int(sizeof(qmldir)/sizeof(qmldir[0])); i++)
