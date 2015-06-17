@@ -33,7 +33,7 @@ class YatPty : public QObject
 {
     Q_OBJECT
 public:
-    YatPty();
+    YatPty(QObject *parent = 0);
     ~YatPty();
 
     void write(const QByteArray &data);

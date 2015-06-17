@@ -31,6 +31,7 @@ Window {
     visible: true
     width: 800
     height: 600
+    color: "black"
 
     Yat.TerminalModel {
         id: termModel
@@ -38,7 +39,28 @@ Window {
 
     ListView {
         anchors.fill: parent
+        anchors.margins: 4
         model: termModel.rows
-        delegate: Text { text: termModel.rows[index].text }
+        delegate: Item {
+            height: childrenRect.height
+            width: parent.width
+            property var rowModel: termModel.rows[index]
+            Text {
+                text: rowModel.text
+                visible: !textInput.visible
+                color: "beige"
+            }
+            TextInput {
+                id: textInput
+                visible: rowModel.hasOwnProperty("inputField")
+                onAccepted: {
+                    termModel.exec(text)
+                    text = ""
+                }
+                width: parent.width
+                Component.onCompleted: forceActiveFocus()
+                color: "white"
+            }
+        }
     }
 }

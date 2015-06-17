@@ -51,8 +51,8 @@ static char env_variables[][255] = {
 };
 static int env_variables_size = sizeof(env_variables) / sizeof(env_variables[0]);
 
-YatPty::YatPty()
-    : m_winsize(0)
+YatPty::YatPty(QObject *parent)
+    : QObject(parent), m_winsize(0)
 {
     m_terminal_pid = forkpty(&m_master_fd,
                              NULL,

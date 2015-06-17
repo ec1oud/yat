@@ -4,6 +4,8 @@
 #include <QJSValue>
 #include <QObject>
 
+class YatPty;
+
 class TerminalModel : public QObject
 {
     Q_OBJECT
@@ -11,19 +13,25 @@ class TerminalModel : public QObject
 public:
     explicit TerminalModel(QObject *parent = 0);
 
-    QJSValue rows() { update(); return m_rows; }
+    QJSValue rows() { return m_rows; }
 
 signals:
     void rowsChanged();
 
 public slots:
+    void exec(const QString &cmd);
+
+protected slots:
+    void read(const QByteArray &data);
 
 protected:
-    void update();
+//    void update();
     void appendTextRow(QString text);
 
 protected:
     QJSValue m_rows;
+    YatPty *m_pty;
+    QJSValue m_inputFieldModel;
 };
 
 #endif // TERMINALMODEL_H
