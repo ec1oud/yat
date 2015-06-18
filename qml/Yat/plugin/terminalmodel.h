@@ -3,6 +3,7 @@
 
 #include <QJSValue>
 #include <QObject>
+#include <QTimer>
 
 class YatPty;
 
@@ -17,6 +18,7 @@ public:
 
 signals:
     void rowsChanged();
+    void quiescent();
 
 public slots:
     void exec(const QString &cmd);
@@ -32,6 +34,7 @@ protected:
     QJSValue m_rows;
     YatPty *m_pty;
     QJSValue m_inputFieldModel;
+    QTimer m_quiescentTimer;
 };
 
 #endif // TERMINALMODEL_H

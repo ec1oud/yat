@@ -13,11 +13,15 @@ TerminalModel::TerminalModel(QObject *parent) :
     QObject(parent), m_pty(new YatPty(this))
 {
     connect(m_pty, &YatPty::readyRead, this, &TerminalModel::read);
+    connect(&m_quiescentTimer, SIGNAL(timeout()), this, SIGNAL(quiescent()));
+    m_quiescentTimer.setInterval(16);
+    m_quiescentTimer.setSingleShot(true);
 }
 
 void TerminalModel::exec(const QString &cmd)
 {
     m_pty->write(cmd.toLocal8Bit() + "\n");
+    m_quiescentTimer.start();
 }
 
 void TerminalModel::read(const QByteArray &data)

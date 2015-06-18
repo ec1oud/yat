@@ -35,12 +35,18 @@ Window {
 
     Yat.TerminalModel {
         id: termModel
+//        onQuiescent: {
+//            console.log("quiescent")
+//            listView.positionViewAtEnd()
+//        }
     }
 
     ListView {
+        id: listView
         anchors.fill: parent
         anchors.margins: 4
         model: termModel.rows
+        onCountChanged: jumpToEndTimer.restart()
         delegate: Item {
             height: childrenRect.height
             width: parent.width
@@ -58,9 +64,15 @@ Window {
                     text = ""
                 }
                 width: parent.width
-                Component.onCompleted: forceActiveFocus()
+//                Component.onCompleted: console.log("TextInput completed")// forceActiveFocus()
                 color: "white"
             }
         }
+    }
+
+    Timer {
+        id: jumpToEndTimer
+        interval: 100
+        onTriggered: listView.positionViewAtEnd()
     }
 }
