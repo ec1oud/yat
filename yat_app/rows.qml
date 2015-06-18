@@ -35,44 +35,31 @@ Window {
 
     Yat.TerminalModel {
         id: termModel
-//        onQuiescent: {
-//            console.log("quiescent")
-//            listView.positionViewAtEnd()
-//        }
     }
 
     ListView {
         id: listView
         anchors.fill: parent
-        anchors.margins: 4
         model: termModel.rows
         onCountChanged: jumpToEndTimer.restart()
-        delegate: Item {
-            height: childrenRect.height
-            width: parent.width
-            property var rowModel: termModel.rows[index]
-            Text {
-                text: rowModel.text
-                visible: !textInput.visible
-                color: "beige"
+        delegate: Text { text: termModel.rows[index].text; color: "beige" }
+        footer: TextInput {
+            id: textInput
+            onAccepted: {
+                termModel.exec(text)
+                text = ""
             }
-            TextInput {
-                id: textInput
-                visible: rowModel.hasOwnProperty("inputField")
-                onAccepted: {
-                    termModel.exec(text)
-                    text = ""
-                }
-                width: parent.width
-//                Component.onCompleted: console.log("TextInput completed")// forceActiveFocus()
-                color: "white"
-            }
+            color: "white"
         }
     }
+
 
     Timer {
         id: jumpToEndTimer
         interval: 100
-        onTriggered: listView.positionViewAtEnd()
+        onTriggered: {
+            listView.positionViewAtEnd()
+            listView.footerItem.forceActiveFocus()
+        }
     }
 }

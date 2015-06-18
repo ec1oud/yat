@@ -13,15 +13,11 @@ TerminalModel::TerminalModel(QObject *parent) :
     QObject(parent), m_pty(new YatPty(this))
 {
     connect(m_pty, &YatPty::readyRead, this, &TerminalModel::read);
-    connect(&m_quiescentTimer, SIGNAL(timeout()), this, SIGNAL(quiescent()));
-    m_quiescentTimer.setInterval(16);
-    m_quiescentTimer.setSingleShot(true);
 }
 
 void TerminalModel::exec(const QString &cmd)
 {
     m_pty->write(cmd.toLocal8Bit() + "\n");
-    m_quiescentTimer.start();
 }
 
 void TerminalModel::read(const QByteArray &data)
@@ -41,14 +37,10 @@ void TerminalModel::appendTextRow(QString text)
     QJSEngine *engine = qmlEngine(this);
     if (engine && m_rows.isUndefined()) {
         m_rows = engine->newArray();
-        m_inputFieldModel = engine->newObject();
-        m_inputFieldModel.setProperty("inputField", true);
-        m_inputFieldModel.setProperty("text", QLatin1String("this is an input field, not plain text"));
     }
     QJSValue o = engine->newObject();
     o.setProperty("text", text);
     int length = m_rows.property(lengthPropName).toInt();
 //qDebug() << text << "length was" << length;
-    m_rows.setProperty(length - 1, o);
-    m_rows.setProperty(length, m_inputFieldModel);
+    m_rows.setProperty(length, o);
 }
