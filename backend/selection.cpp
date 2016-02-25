@@ -157,6 +157,7 @@ void Selection::sendToSelection() const
 
 void Selection::pasteFromSelection()
 {
+//qDebug() << QGuiApplication::clipboard()->text(QClipboard::Selection).toUtf8();
     m_screen->pty()->write(QGuiApplication::clipboard()->text(QClipboard::Selection).toUtf8());
 }
 

@@ -260,6 +260,7 @@ Selection *Screen::selection() const
 
 void Screen::doubleClicked(double character, double line)
 {
+//qDebug() << character << line;
     QPoint start, end;
     int64_t charInt = std::llround(character);
     int64_t lineInt = std::llround(line);

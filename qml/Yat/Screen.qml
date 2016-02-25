@@ -21,7 +21,7 @@
 *
 *******************************************************************************/
 
-import QtQuick 2.7
+import QtQuick 2.8
 import Qt.labs.controls 1.0
 import Yat 1.0 as Yat
 
@@ -83,6 +83,7 @@ Yat.TerminalScreen {
     }
     Flickable {
         id: flickable
+        objectName: "flickable"
         anchors.top: parent.top
         anchors.left: parent.left
         contentWidth: width
@@ -96,6 +97,7 @@ Yat.TerminalScreen {
             id: textContainer
             width: parent.width
             height: screen.contentHeight * screenItem.fontHeight
+            objectName: "textContainer"
 
             Selection {
                 characterHeight: fontHeight
@@ -112,6 +114,7 @@ Yat.TerminalScreen {
             }
 
             MouseHandler {
+                objectName: "dragSelectionHandler"
                 property int drag_start_x
                 property int drag_start_y
                 onPressed: {
@@ -125,14 +128,14 @@ Yat.TerminalScreen {
                     screen.selection.startY = line;
                     screen.selection.endX = character;
                     screen.selection.endY = line;
-                    console.log("pressed button " + event.button + " @ " + event.scenePos + " sel starts at " + character + " on line " + line)
+//                    console.log("pressed button " + event.button + " @ " + event.scenePos + " sel starts at " + character + " on line " + line)
                 }
                 onUpdated: {
                     var transformed_mouse = mapToItem(textContainer, event.pos.x, event.pos.y);
                     var character = Math.floor(transformed_mouse.x / fontWidth);
                     var line = Math.floor(transformed_mouse.y / fontHeight);
                     var current_pos = Qt.point(character,line);
-                    console.log("updated @ " + event.pos + " scene " + event.scenePos + " transformed " + transformed_mouse + " in chars " + current_pos)
+//                    console.log("updated @ " + event.pos + " scene " + event.scenePos + " transformed " + transformed_mouse + " in chars " + current_pos)
                     if (line < drag_start_y || (line === drag_start_y && character < drag_start_x)) {
                         screen.selection.startX = character;
                         screen.selection.startY = line;
@@ -149,14 +152,23 @@ Yat.TerminalScreen {
             }
 
             TapHandler {
+                objectName: "middleClickHandler"
                 acceptedButtons: Qt.MiddleButton
-                onTapped: screen.pasteFromSelection()
+                onTapped: screen.selection.pasteFromSelection()
             }
 
             TapHandler {
-//                acceptedButtons: Qt.LeftButton
+                objectName: "doubleClickHandler"
+
+                // Workaround to ensure that emulated mouse events from touchscreens are not grabbed,
+                // because we need them to fall through to the Flickable.
+                // If Flickable handled touch events directly, this would not be necessary:
+                // this handler would grab touch temporarily, and then Flickable would steal it
+                // if you drag far enough.
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+
                 onTapped: {
-                    console.log("clicked" + tapCount)
+                    console.log("clicked " + tapCount)
                     if (tapCount === 2) {
                         var transformed_mouse = mapToItem(textContainer, event.pos.x, event.pos.y);
                         var character = Math.floor(transformed_mouse.x / fontWidth);
