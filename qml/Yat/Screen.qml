@@ -236,6 +236,10 @@ Yat.TerminalScreen {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         onPressed: {
+            if (mouse.source) {
+                mouse.accepted = false
+                return
+            }
             if (mouse.button == Qt.LeftButton) {
                 hoverEnabled = true;
                 var transformed_mouse = mapToItem(textContainer, mouse.x, mouse.y);
@@ -252,6 +256,10 @@ Yat.TerminalScreen {
         }
 
         onPositionChanged: {
+            if (mouse.source) {
+                mouse.accepted = false
+                return
+            }
             var transformed_mouse = mapToItem(textContainer, mouse.x, mouse.y);
             var character = Math.floor(transformed_mouse.x / fontWidth);
             var line = Math.floor(transformed_mouse.y / fontHeight);
@@ -270,6 +278,10 @@ Yat.TerminalScreen {
         }
 
         onReleased: {
+            if (mouse.source) {
+                mouse.accepted = false
+                return
+            }
             if (mouse.button == Qt.LeftButton) {
                 hoverEnabled = false;
                 screen.selection.sendToSelection();
@@ -277,12 +289,20 @@ Yat.TerminalScreen {
         }
 
         onClicked: {
+            if (mouse.source) {
+                mouse.accepted = false
+                return
+            }
             if (mouse.button == Qt.MiddleButton) {
                 screen.pasteFromSelection();
             }
         }
 
         onDoubleClicked: {
+            if (mouse.source) {
+                mouse.accepted = false
+                return
+            }
             if (mouse.button == Qt.LeftButton) {
                 var transformed_mouse = mapToItem(textContainer, mouse.x, mouse.y);
                 var character = Math.floor(transformed_mouse.x / fontWidth);
