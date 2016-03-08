@@ -236,7 +236,7 @@ Yat.TerminalScreen {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         onPressed: {
-            if (mouse.source) {
+            if (mouse.source !== Qt.MouseEventNotSynthesized) {
                 mouse.accepted = false
                 return
             }
@@ -256,7 +256,7 @@ Yat.TerminalScreen {
         }
 
         onPositionChanged: {
-            if (mouse.source) {
+            if (mouse.source !== Qt.MouseEventNotSynthesized) {
                 mouse.accepted = false
                 return
             }
@@ -278,7 +278,7 @@ Yat.TerminalScreen {
         }
 
         onReleased: {
-            if (mouse.source) {
+            if (mouse.source !== Qt.MouseEventNotSynthesized) {
                 mouse.accepted = false
                 return
             }
@@ -289,7 +289,7 @@ Yat.TerminalScreen {
         }
 
         onClicked: {
-            if (mouse.source) {
+            if (mouse.source !== Qt.MouseEventNotSynthesized) {
                 mouse.accepted = false
                 return
             }
@@ -299,7 +299,7 @@ Yat.TerminalScreen {
         }
 
         onDoubleClicked: {
-            if (mouse.source) {
+            if (mouse.source !== Qt.MouseEventNotSynthesized) {
                 mouse.accepted = false
                 return
             }
