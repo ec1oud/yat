@@ -138,6 +138,7 @@ static void printParameters(const QVector<int> &parameters, QDebug &debug, bool 
 Parser::Parser(Screen *screen)
     : m_decode_state(PlainText)
     , m_decode_osc_state(None)
+    , m_decode_dcs_state(DcsNone)
     , m_current_token_start(0)
     , m_current_position(0)
     , m_intermediate_char(QChar())
@@ -185,6 +186,9 @@ void Parser::addData(const QByteArray &data)
         case DecodeC1_7bit:
             decodeC1_7bit(character);
             break;
+        case DecodeDCS:
+            decodeDCS(character);
+            break;
         case DecodeCSI:
             decodeCSI(character);
             break;
@@ -197,9 +201,23 @@ void Parser::addData(const QByteArray &data)
         case DecodeFontSize:
             decodeFontSize(character);
             break;
-       }
+        case DecodeReGIS:
+            if (character == C1_7bit::ESC) {
+                m_regis_mode = ReGISEsc;
+            } else if (m_regis_mode == ReGISEsc) {
+                if (character == C1_7bit::ST) {
+                    qCDebug(lcParser) << "ReGIS commands:" << m_regis_data;
+                    m_regis_mode = ReGISNone;
+                    tokenFinished();
+                }
+            } else {
+                // decodeReGIS(character); // TODO
+                m_regis_data.append(character);
+            }
+            break;
+        }
     }
-    if (m_decode_state == PlainText) {
+    if (m_decode_state == PlainText || m_regis_mode == ReGISDrawDebug) {
         QByteArray to_insert = getByteArrayMidNoCopy(m_current_data, m_current_token_start, m_current_data.size() - m_current_token_start);
         if (to_insert.size()) {
             qCDebug(lcParser) << "Parser Insert text:" << to_insert;
@@ -381,7 +399,6 @@ void Parser::decodeC1_7bit(uchar character)
         break;
     case C1_7bit::SS2:
     case C1_7bit::SS3:
-    case C1_7bit::DCS:
     case C1_7bit::PU1:
     case C1_7bit::PU2:
     case C1_7bit::STS:
@@ -394,6 +411,9 @@ void Parser::decodeC1_7bit(uchar character)
     case C1_7bit::SCI:
         qCWarning(lcParser) << "Unhandled" << C1_7bit::C1_7bit(character);
         tokenFinished();
+        break;
+    case C1_7bit::DCS:
+        m_decode_state = DecodeDCS;
         break;
     case C1_7bit::CSI:
         m_decode_state = DecodeCSI;
@@ -846,6 +866,55 @@ void Parser::decodeOSC(uchar character)
             tokenFinished();
         } else {
             m_osc_data.append(character);
+        }
+    }
+}
+
+void Parser::decodeDCS(uchar character)
+{
+    if (m_decode_dcs_state == DcsNone) {
+        if (!m_parameters.size() &&
+                character >= 0x30 && character <= 0x33) {
+            decodeParameters(character);
+            m_decode_dcs_state = DcsParameter;
+        } else if (character == 'p') {
+            // ESC P p : enter ReGIS at the point where ReGIS was last exited
+            m_decode_dcs_state = DcsNone;
+            tokenFinished();
+            m_decode_state = DecodeReGIS;
+            m_regis_mode = ReGISDraw;
+            qCDebug(lcParser) << "resumed ReGIS mode";
+        } else {
+            m_decode_dcs_state = DcsUnknown;
+            qCWarning(lcParser) << "Unknown parameter state" << m_parameters.at(0);
+        }
+    } else if (m_decode_dcs_state == DcsParameter) {
+        if (character == 'p') {
+            // ESC P 0 p : enter ReGIS at the point where ReGIS was last exited
+            // ESC P 1 p : enter ReGIS, begin a new command
+            // ESC P 2 p : enter ReGIS at the point where ReGIS was last exited, command display mode
+            // ESC P 3 p : enter ReGIS, begin a new command, command display mode
+            m_decode_dcs_state = DcsNone;
+            m_regis_mode = ReGISDraw;
+            if (m_parameter_string.length() > 0) {
+                switch(m_parameter_string.at(0)) {
+                case '0':
+                    break;
+                case '1':
+                    m_regis_data.clear();
+                    break;
+                case '2':
+                    m_regis_mode = ReGISDrawDebug;
+                    break;
+                case '3':
+                    m_regis_mode = ReGISDrawDebug;
+                    m_regis_data.clear();
+                    break;
+                }
+            }
+            tokenFinished();
+            m_decode_state = DecodeReGIS;
+            qCDebug(lcParser) << "entered ReGIS mode, params" << m_parameter_string;
         }
     }
 }
@@ -1368,11 +1437,17 @@ QDebug operator<<(QDebug debug, Parser::DecodeState decodeState)
         case Parser::DecodeOSC:
             debug << "DecodeOSC";
             break;
+        case Parser::DecodeDCS:
+            debug << "DecodeDCS";
+            break;
         case Parser::DecodeCharacterSet:
             debug << "DecodeCharacterSet";
             break;
         case Parser::DecodeFontSize:
             debug << "DecodeFontSize";
+            break;
+        case Parser::DecodeReGIS:
+            debug << "DecodeReGIS";
             break;
     }
     return debug;

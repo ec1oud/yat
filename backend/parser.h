@@ -48,8 +48,10 @@ private:
         DecodeC1_7bit,
         DecodeCSI,
         DecodeOSC,
+        DecodeDCS,
         DecodeCharacterSet,
-        DecodeFontSize
+        DecodeFontSize,
+        DecodeReGIS
     };
 
     enum DecodeOSCState {
@@ -61,11 +63,26 @@ private:
         Unknown
     };
 
+    enum DecodeDCSState {
+        DcsNone,
+        DcsParameter,
+        ReGIS,
+        DcsUnknown
+    };
+
+    enum ReGISMode {
+        ReGISNone,
+        ReGISDraw,
+        ReGISDrawDebug,
+        ReGISEsc
+    };
+
     void decodeC0(uchar character);
     void decodeC1_7bit(uchar character);
     void decodeParameters(uchar character);
     void decodeCSI(uchar character);
     void decodeOSC(uchar character);
+    void decodeDCS(uchar character);
     void decodeCharacterSet(uchar character);
     void decodeFontSize(uchar character);
 
@@ -84,6 +101,7 @@ private:
 
     DecodeState m_decode_state;
     DecodeOSCState m_decode_osc_state;
+    DecodeDCSState m_decode_dcs_state;
     QByteArray m_osc_data;
 
     QByteArray m_current_data;
@@ -104,6 +122,9 @@ private:
     int m_decode_graphics_set;
     QTextCodec *m_graphic_codecs[4];
     Utf8Decoder m_utf8_decoder;
+
+    ReGISMode m_regis_mode;
+    QByteArray m_regis_data;
 
     Screen *m_screen;
     friend QDebug operator<<(QDebug debug, DecodeState decodeState);
