@@ -29,6 +29,7 @@
 #include <QtCore/QLinkedList>
 
 #include "controll_chars.h"
+#include "regis.h"
 #include "utf8_decoder.h"
 
 class Screen;
@@ -124,7 +125,7 @@ private:
     Utf8Decoder m_utf8_decoder;
 
     ReGISMode m_regis_mode;
-    QByteArray m_regis_data;
+    ReGISImage m_regis_image; // TODO probably don't need to own this here
 
     Screen *m_screen;
     friend QDebug operator<<(QDebug debug, DecodeState decodeState);

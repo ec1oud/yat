@@ -206,13 +206,13 @@ void Parser::addData(const QByteArray &data)
                 m_regis_mode = ReGISEsc;
             } else if (m_regis_mode == ReGISEsc) {
                 if (character == C1_7bit::ST) {
-                    qCDebug(lcParser) << "ReGIS commands:" << m_regis_data;
+                    m_regis_image.image().save(QLatin1String("/tmp/regis-out.png"));
                     m_regis_mode = ReGISNone;
+                    qCDebug(lcParser) << "exited ReGIS mode, saved image to /tmp/regis-out.png";
                     tokenFinished();
                 }
             } else {
-                // decodeReGIS(character); // TODO
-                m_regis_data.append(character);
+                m_regis_image.processChar((char)character);
             }
             break;
         }
@@ -901,14 +901,14 @@ void Parser::decodeDCS(uchar character)
                 case '0':
                     break;
                 case '1':
-                    m_regis_data.clear();
+                    m_regis_image.erase();
                     break;
                 case '2':
                     m_regis_mode = ReGISDrawDebug;
                     break;
                 case '3':
                     m_regis_mode = ReGISDrawDebug;
-                    m_regis_data.clear();
+                    m_regis_image.erase();
                     break;
                 }
             }

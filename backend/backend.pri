@@ -22,7 +22,8 @@ HEADERS += \
            $$PWD/nrc_text_codec.h \
            $$PWD/scrollback.h \
            $$PWD/utf8_decoder.h \
-           $$PWD/selection.h
+           $$PWD/selection.h \
+           $$PWD/regis.h \
 
 SOURCES += \
            $$PWD/yat_pty.cpp \
@@ -37,5 +38,5 @@ SOURCES += \
            $$PWD/cursor.cpp \
            $$PWD/nrc_text_codec.cpp \
            $$PWD/scrollback.cpp \
-           $$PWD/selection.cpp
-
+           $$PWD/selection.cpp \
+           $$PWD/regis.cpp \
