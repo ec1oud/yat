@@ -68,6 +68,7 @@ void ScreenData::setHeight(int height, int currentCursorLine)
 
     int removed_beginning = 0;
     int removed_end = 0;
+    Q_UNUSED(removed_end)
     int reclaimed = 0;
 
     if (m_height > height) {

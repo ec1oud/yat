@@ -434,7 +434,7 @@ void Screen::sendKey(const QString &text, Qt::Key key, Qt::KeyboardModifiers mod
         else
             control = C1_7bit::CSI;
 
-            code = 'B';
+        code = 'B';
         break;
     case Qt::Key_Left:
         escape = C0::ESC;

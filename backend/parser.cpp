@@ -751,6 +751,7 @@ void Parser::decodeCSI(uchar character)
                         break;
                     case FinalBytesNoIntermediate::DSR:
                         qCDebug(lcParser) << "report";
+                        break;
                     case FinalBytesNoIntermediate::DAQ:
                     case FinalBytesNoIntermediate::Reserved0:
                     case FinalBytesNoIntermediate::Reserved1:
@@ -1285,7 +1286,7 @@ void Parser::handleSGR()
 
 // @return additional bytes consumed beyond the default of 1
 int Parser::handleXtermColor(int param, int i) {
-    QRgb color;
+    QRgb color = QColor(Qt::white).rgb();
     int ret = 0;
     switch (m_parameters.at(++i)) {
         case 5:
