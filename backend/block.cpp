@@ -521,8 +521,7 @@ void Block::printStyleList() const
 
 void Block::printStyleList(QDebug &debug) const
 {
-    QString text_line = m_text_line;
-    debug << "  " << m_line << lineCount() << m_text_line.size() << (void *) this << text_line << "\n"; debug << "\t";
+    debug << m_line << lineCount() << m_text_line.size() << (void *) this << '\t' << m_text_line;
     for (int i= 0; i < m_style_list.size(); i++) {
         debug << m_style_list.at(i);
     }
@@ -530,7 +529,6 @@ void Block::printStyleList(QDebug &debug) const
 
 void Block::printStyleListWidthText() const
 {
-    QString text_line = m_text_line;
     for (int i= 0; i < m_style_list.size(); i++) {
         const TextStyleLine &currentStyle = m_style_list.at(i);
         QDebug debug = qDebug();

@@ -79,7 +79,9 @@ public:
         this->style = style.style;
     }
 };
+
 QDebug operator<<(QDebug debug, TextStyleLine line);
+QDebug operator<<(QDebug debug, TextStyle::Styles styles);
 
 
 #endif // TEXT_STYLE_H

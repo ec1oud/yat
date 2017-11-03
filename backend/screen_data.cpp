@@ -271,7 +271,7 @@ void ScreenData::dispatchLineEvents()
 void ScreenData::printRuler(QDebug &debug) const
 {
     QString ruler = QString("|----i----").repeated((m_width/10)+1).append("|");
-    debug << "    " << (void *) this << ruler;
+    debug << "\t\t\t" << ruler;
 }
 
 void ScreenData::printStyleInformation() const
@@ -281,7 +281,6 @@ void ScreenData::printStyleInformation() const
     for (int i = 0; it != m_screen_blocks.end(); ++it, i++) {
         if (i % 5 == 0) {
             QDebug debug = qDebug();
-            debug << "Ruler:";
             printRuler(debug);
         }
         QDebug debug = qDebug();

@@ -21,7 +21,10 @@ bool TextStyle::isCompatible(const TextStyle &other) const
 
 QDebug operator<<(QDebug debug, TextStyleLine line)
 {
-    debug << "[" << line.start_index << "(" << line.style << ":" << line.foreground << ":" << line.background << ")" << line.end_index << "]";
+    const QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << '[' << line.start_index << ' ' << line.style << ":" << hex <<
+             (line.foreground & 0xFFFFFF) << ":" << (line.background & 0xFFFFFF) << ' ' << line.end_index << ']';
     return debug;
 }
 
@@ -32,4 +35,33 @@ void TextStyleLine::releaseTextSegment(Screen *screen)
         screen->releaseTextSegment(text_segment);
         text_segment = 0;
     }
+}
+
+QDebug operator<<(QDebug debug, TextStyle::Styles styles)
+{
+    if (styles == TextStyle::Normal)
+        debug << "nrm";
+    if (styles & TextStyle::Italic)
+        debug << "ita";
+    if (styles & TextStyle::Bold)
+        debug << "bld";
+    if (styles & TextStyle::Underlined)
+        debug << "uld";
+    if (styles & TextStyle::Blinking)
+        debug << "bln";
+    if (styles & TextStyle::FastBlinking)
+        debug << "fbl";
+    if (styles & TextStyle::Gothic)
+        debug << "gth";
+    if (styles & TextStyle::DoubleUnderlined)
+        debug << "dul";
+    if (styles & TextStyle::Framed)
+        debug << "frm";
+    if (styles & TextStyle::Overlined)
+        debug << "ovl";
+    if (styles & TextStyle::Encircled)
+        debug << "enc";
+    if (styles & TextStyle::Inverse)
+        debug << "inv";
+    return debug;
 }
