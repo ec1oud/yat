@@ -19,7 +19,7 @@ bool TextStyle::isCompatible(const TextStyle &other) const
             && style == other.style;
 }
 
-QDebug operator<<(QDebug debug, TextStyleLine line)
+QDebug operator<<(QDebug debug, TextStyleSpan line)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
@@ -28,7 +28,7 @@ QDebug operator<<(QDebug debug, TextStyleLine line)
     return debug;
 }
 
-void TextStyleLine::releaseTextSegment(Screen *screen)
+void TextStyleSpan::releaseTextSegment(Screen *screen)
 {
     if (text_segment) {
         text_segment->setVisible(false);

@@ -83,27 +83,26 @@ public:
     void dispatchEvents();
     void releaseTextObjects();
 
-    QVector<TextStyleLine> style_list();
-
-    void printStyleList() const;
-    void printStyleList(QDebug &debug) const;
-    void printStyleListWidthText() const;
+    QVector<TextStyleSpan> styleSpans() { return m_style_spans; }
+    void printStyleSpans() const;
+    void printStyleSpans(QDebug &debug) const;
+    void printStyleSpansWidthText() const;
 
 private:
     void mergeCompatibleStyles();
     void ensureStyleAlignWithLines(int i);
     Screen *m_screen;
-    QString m_text_line;
-    QVector<TextStyleLine> m_style_list;
+    QString m_text_line; // just the text of this line
+    QVector<TextStyleSpan> m_style_spans; // styled character ranges
     size_t m_line;
     size_t m_new_line;
     int m_screen_index;
 
-    int m_width;
+    int16_t m_width;
 
-    bool m_visible;
-    bool m_changed;
-    bool m_only_latin;
+    bool m_visible : 1;
+    bool m_changed : 1;
+    bool m_only_latin : 1;
 };
 
 #endif // BLOCK_H

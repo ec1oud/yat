@@ -36,42 +36,35 @@ public:
 };
 
 class Text;
-class TextStyleLine : public TextStyle {
+class TextStyleSpan : public TextStyle {
 public:
-    TextStyleLine(const TextStyle &style, int start_index, int end_index)
+    TextStyleSpan(const TextStyle &style, int start_index, int end_index)
         : TextStyle(style)
         , start_index(start_index)
         , end_index(end_index)
-        , old_index(-1)
-        , text_segment(0)
         , style_dirty(true)
         , index_dirty(true)
         , text_dirty(true)
     {
     }
 
-    TextStyleLine()
+    TextStyleSpan()
         : start_index(0)
         , end_index(0)
-        , old_index(-1)
-        , text_segment(0)
         , style_dirty(false)
         , index_dirty(false)
         , text_dirty(false)
     {
-
     }
 
     void releaseTextSegment(Screen *screen);
 
-    int start_index;
-    int end_index;
-
-    int old_index;
-    Text *text_segment;
-    bool style_dirty;
-    bool index_dirty;
-    bool text_dirty;
+    Text *text_segment = nullptr;
+    int16_t start_index;
+    int16_t end_index;
+    bool style_dirty : 1;
+    bool index_dirty : 1;
+    bool text_dirty : 1;
 
     void setStyle(const TextStyle &style) {
         foreground = style.foreground;
@@ -80,8 +73,7 @@ public:
     }
 };
 
-QDebug operator<<(QDebug debug, TextStyleLine line);
+QDebug operator<<(QDebug debug, TextStyleSpan line);
 QDebug operator<<(QDebug debug, TextStyle::Styles styles);
-
 
 #endif // TEXT_STYLE_H

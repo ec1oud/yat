@@ -48,9 +48,8 @@ Block::Block(Screen *screen)
 
 Block::~Block()
 {
-    for (int i = 0; i < m_style_list.size(); i++) {
-        m_style_list[i].releaseTextSegment(m_screen);
-    }
+    for (int i = 0; i < m_style_spans.size(); i++)
+        m_style_spans[i].releaseTextSegment(m_screen);
 }
 
 Screen *Block::screen() const
@@ -62,11 +61,11 @@ void Block::clear()
 {
     m_text_line.clear();
 
-    for (int i = 0; i < m_style_list.size(); i++) {
-        m_style_list[i].releaseTextSegment(m_screen);
+    for (int i = 0; i < m_style_spans.size(); i++) {
+        m_style_spans[i].releaseTextSegment(m_screen);
     }
 
-    m_style_list.clear();
+    m_style_spans.clear();
 
     m_only_latin = true;
     m_changed = true;
@@ -97,8 +96,8 @@ void Block::deleteCharacters(int from, int to)
 
     int last_index = -1;
 
-    for (int i = 0; i < m_style_list.size(); i++) {
-        TextStyleLine &current_style = m_style_list[i];
+    for (int i = 0; i < m_style_spans.size(); i++) {
+        TextStyleSpan &current_style = m_style_spans[i];
         last_index = i;
         if (found) {
             current_style.start_index -= removed;
@@ -109,7 +108,7 @@ void Block::deleteCharacters(int from, int to)
                 if (current_style_size <= size - removed) {
                     removed += current_style.end_index + 1 - current_style.start_index;
                     current_style.releaseTextSegment(m_screen);
-                    m_style_list.remove(i);
+                    m_style_spans.remove(i);
                     i--;
                 } else {
                     current_style.end_index -= size - removed;
@@ -126,7 +125,7 @@ void Block::deleteCharacters(int from, int to)
                 removed = subtract;
                 if (current_style.end_index < current_style.start_index) {
                     current_style.releaseTextSegment(m_screen);
-                    m_style_list.remove(i);
+                    m_style_spans.remove(i);
                     i--;
                 }
             }
@@ -134,13 +133,13 @@ void Block::deleteCharacters(int from, int to)
     }
 
     if (last_index >= 0) {
-        TextStyleLine &last_modified = m_style_list[last_index];
+        TextStyleSpan &last_modified = m_style_spans[last_index];
         TextStyle defaultStyle = m_screen->defaultTextStyle();
         if (last_modified.isCompatible(defaultStyle)) {
             last_modified.end_index += size;
             last_modified.text_dirty = true;
         } else {
-            m_style_list.insert(last_index + 1, TextStyleLine(defaultStyle,
+            m_style_spans.insert(last_index + 1, TextStyleSpan(defaultStyle,
                         last_modified.end_index + 1, last_modified.end_index + size));
         }
     }
@@ -169,23 +168,23 @@ void Block::replaceAtPos(int pos, const QString &text, const TextStyle &style, b
             int old_size = m_text_line.size();
             QString filling(pos - m_text_line.size(), QChar(' '));
             m_text_line.append(filling);
-            m_style_list.append(TextStyleLine(m_screen->defaultTextStyle(), old_size, old_size + filling.size() -1));
+            m_style_spans.append(TextStyleSpan(m_screen->defaultTextStyle(), old_size, old_size + filling.size() -1));
         }
         m_text_line.append(text);
-        m_style_list.append(TextStyleLine(style, pos, pos + text.size()-1));
+        m_style_spans.append(TextStyleSpan(style, pos, pos + text.size()-1));
         return;
     } else if (pos + text.size() > m_text_line.size()) {
-        m_style_list.append(TextStyleLine(m_screen->defaultTextStyle(), pos + text.size() - m_text_line.size(), pos + text.size() -1));
+        m_style_spans.append(TextStyleSpan(m_screen->defaultTextStyle(), pos + text.size() - m_text_line.size(), pos + text.size() -1));
     }
 
     m_text_line.replace(pos,text.size(),text);
     bool found = false;
-    for (int i = 0; i < m_style_list.size(); i++) {
-        TextStyleLine &current_style = m_style_list[i];
+    for (int i = 0; i < m_style_spans.size(); i++) {
+        TextStyleSpan &current_style = m_style_spans[i];
         if (found) {
             if (current_style.end_index <= pos + text.size() - 1) {
                 current_style.releaseTextSegment(m_screen);
-                m_style_list.remove(i);
+                m_style_spans.remove(i);
                 i--;
             } else if (current_style.start_index <= pos + text.size()) {
                 current_style.start_index = pos + text.size();
@@ -208,18 +207,18 @@ void Block::replaceAtPos(int pos, const QString &text, const TextStyle &style, b
                     } else if (current_style.start_index == pos) {
                         current_style.start_index = pos + text.size();
                         current_style.text_dirty = true;
-                        m_style_list.insert(i, TextStyleLine(style,pos, pos+text.size() -1));
+                        m_style_spans.insert(i, TextStyleSpan(style,pos, pos+text.size() -1));
                     } else if (current_style.end_index == pos + text.size() - 1) {
                         current_style.end_index = pos - 1;
                         current_style.text_dirty = true;
-                        m_style_list.insert(i+1, TextStyleLine(style,pos, pos + text.size() - 1));
+                        m_style_spans.insert(i+1, TextStyleSpan(style,pos, pos + text.size() - 1));
                     } else {
                         int old_end = current_style.end_index;
                         current_style.end_index = pos - 1;
                         current_style.text_dirty = true;
-                        m_style_list.insert(i+1, TextStyleLine(style,pos, pos + text.size() - 1));
+                        m_style_spans.insert(i+1, TextStyleSpan(style,pos, pos + text.size() - 1));
                         if (pos + text.size() < m_text_line.size()) {
-                            m_style_list.insert(i+2, TextStyleLine(current_style,pos + text.size(), old_end));
+                            m_style_spans.insert(i+2, TextStyleSpan(current_style,pos + text.size(), old_end));
                         }
                     }
                 }
@@ -230,12 +229,12 @@ void Block::replaceAtPos(int pos, const QString &text, const TextStyle &style, b
                     current_style.text_dirty = true;
                 } else {
                     if (current_style.start_index == pos) {
-                        if (i > 0 && m_style_list.at(i-1).isCompatible(style)) {
-                            TextStyleLine &previous_style = m_style_list[i -1];
+                        if (i > 0 && m_style_spans.at(i-1).isCompatible(style)) {
+                            TextStyleSpan &previous_style = m_style_spans[i -1];
                             previous_style.end_index+= text.size();
                             previous_style.text_dirty = true;
                             current_style.releaseTextSegment(m_screen);
-                            m_style_list.remove(i);
+                            m_style_spans.remove(i);
                             i--;
                         } else {
                             current_style.end_index = pos + text.size() - 1;
@@ -249,7 +248,7 @@ void Block::replaceAtPos(int pos, const QString &text, const TextStyle &style, b
                     } else {
                         current_style.end_index = pos - 1;
                         current_style.text_dirty = true;
-                        m_style_list.insert(i+1, TextStyleLine(style, pos, pos + text.size() -1));
+                        m_style_spans.insert(i+1, TextStyleSpan(style, pos, pos + text.size() -1));
                         i++;
                     }
                 }
@@ -266,15 +265,15 @@ void Block::insertAtPos(int pos, const QString &text, const TextStyle &style, bo
     m_text_line.insert(pos,text);
     bool found = false;
 
-    for (int i = 0; i < m_style_list.size(); i++) {
-        TextStyleLine &current_style = m_style_list[i];
+    for (int i = 0; i < m_style_spans.size(); i++) {
+        TextStyleSpan &current_style = m_style_spans[i];
         if (found) {
             current_style.start_index += text.size();
             current_style.end_index += text.size();
             current_style.index_dirty = true;
             if (current_style.start_index >= m_text_line.size()) {
                 current_style.releaseTextSegment(m_screen);
-                m_style_list.remove(i);
+                m_style_spans.remove(i);
                 i--;
             } else if (current_style.end_index >= m_text_line.size()) {
                 current_style.end_index = m_text_line.size()-1;
@@ -285,21 +284,21 @@ void Block::insertAtPos(int pos, const QString &text, const TextStyle &style, bo
                 current_style.start_index += text.size();
                 current_style.end_index += text.size();
                 current_style.index_dirty = true;
-                m_style_list.insert(i, TextStyleLine(style, pos, pos+ text.size() - 1));
+                m_style_spans.insert(i, TextStyleSpan(style, pos, pos+ text.size() - 1));
                 i++;
             } else if (current_style.end_index == pos) {
                 current_style.end_index--;
                 current_style.text_dirty = true;
-                m_style_list.insert(i+1, TextStyleLine(style, pos, pos+ text.size() - 1));
+                m_style_spans.insert(i+1, TextStyleSpan(style, pos, pos+ text.size() - 1));
                 i++;
             } else {
                 int old_end = current_style.end_index;
                 current_style.end_index = pos -1;
                 current_style.text_dirty = true;
-                m_style_list.insert(i+1, TextStyleLine(style, pos, pos + text.size() - 1));
+                m_style_spans.insert(i+1, TextStyleSpan(style, pos, pos + text.size() - 1));
                 if (pos + text.size() < m_text_line.size()) {
                     int segment_end = std::min(m_text_line.size() -1, old_end + text.size());
-                    m_style_list.insert(i+2, TextStyleLine(current_style, pos + text.size(), segment_end));
+                    m_style_spans.insert(i+2, TextStyleSpan(current_style, pos + text.size(), segment_end));
                     i+=2;
                 } else {
                     i++;
@@ -329,9 +328,9 @@ void Block::setVisible(bool visible)
     if (visible != m_visible) {
         m_changed = true;
         m_visible = visible;
-        for (int i = 0; i < m_style_list.size(); i++) {
-            if (m_style_list.at(i).text_segment) {
-                m_style_list.at(i).text_segment->setVisible(visible);
+        for (int i = 0; i < m_style_spans.size(); i++) {
+            if (m_style_spans.at(i).text_segment) {
+                m_style_spans.at(i).text_segment->setVisible(visible);
             }
         }
     }
@@ -349,19 +348,18 @@ Block *Block::split(int line)
     m_changed = true;
     Block *to_return = new Block(m_screen);
     int start_index = line * m_width;
-    for (int i = 0; i < m_style_list.size(); i++) {
+    for (int i = 0; i < m_style_spans.size(); i++) {
         ensureStyleAlignWithLines(i);
-        TextStyleLine &current_style = m_style_list[i];
+        TextStyleSpan &current_style = m_style_spans[i];
         if (current_style.start_index >= start_index) {
             current_style.start_index -= start_index;
-            current_style.old_index = current_style.start_index - 1;
             current_style.end_index -= start_index;
             current_style.index_dirty = true;
             current_style.text_dirty = true;
             current_style.index_dirty = true;
-            to_return->m_style_list.append(TextStyleLine(current_style, current_style.start_index,
+            to_return->m_style_spans.append(TextStyleSpan(current_style, current_style.start_index,
                         current_style.end_index));
-            m_style_list.remove(i);
+            m_style_spans.remove(i);
             i--;
         }
     }
@@ -378,17 +376,17 @@ Block *Block::takeLine(int line)
     Block *to_return = new Block(m_screen);
     int start_index = line * m_width;
     int end_index = start_index + (m_width - 1);
-    for (int i = 0; i < m_style_list.size(); i++) {
+    for (int i = 0; i < m_style_spans.size(); i++) {
         ensureStyleAlignWithLines(i);
-        TextStyleLine &current_style = m_style_list[i];
+        TextStyleSpan &current_style = m_style_spans[i];
         if (current_style.start_index >= start_index && current_style.end_index <= end_index) {
             current_style.releaseTextSegment(m_screen);
             current_style.start_index -= start_index;
             current_style.end_index -= start_index;
             current_style.index_dirty = true;
-            to_return->m_style_list.append(TextStyleLine(current_style, current_style.start_index,
+            to_return->m_style_spans.append(TextStyleSpan(current_style, current_style.start_index,
                         current_style.end_index));
-            m_style_list.remove(i);
+            m_style_spans.remove(i);
             i--;
         } else if (current_style.start_index > end_index) {
             current_style.start_index -= (end_index + 1) - start_index;
@@ -410,12 +408,12 @@ void Block::removeLine(int line)
     m_changed = true;
     int start_index = line * m_width;
     int end_index = start_index + (m_width - 1);
-    for (int i = 0; i < m_style_list.size(); i++) {
+    for (int i = 0; i < m_style_spans.size(); i++) {
         ensureStyleAlignWithLines(i);
-        TextStyleLine &current_style = m_style_list[i];
+        TextStyleSpan &current_style = m_style_spans[i];
         if (current_style.start_index >= start_index && current_style.end_index <= end_index) {
             current_style.releaseTextSegment(m_screen);
-            m_style_list.remove(i);
+            m_style_spans.remove(i);
             i--;
         } else if (current_style.start_index > end_index) {
             current_style.start_index -= (end_index + 1) - start_index;
@@ -435,15 +433,15 @@ void Block::moveLinesFromBlock(Block *block, int start_line, int count)
     int start_char = block->width() * start_line;
     int end_char = (block->width() * (start_line + count)) - 1;
 
-    for (int i = 0; i < block->m_style_list.size(); i++) {
-        TextStyleLine &current_style = block->m_style_list[i];
+    for (int i = 0; i < block->m_style_spans.size(); i++) {
+        TextStyleSpan &current_style = block->m_style_spans[i];
         if (current_style.start_index >= start_char && current_style.end_index <= end_char) {
             current_style.start_index += (-start_char + m_text_line.size());
             current_style.end_index += (-start_char + m_text_line.size());
             current_style.releaseTextSegment(m_screen);
-            m_style_list.append(TextStyleLine(current_style, current_style.start_index,
+            m_style_spans.append(TextStyleSpan(current_style, current_style.start_index,
                         current_style.end_index));
-            block->m_style_list.remove(i);
+            block->m_style_spans.remove(i);
             i--;
         } else if (current_style.start_index > end_char) {
             current_style.start_index -= (end_char + 1) - start_char;
@@ -461,21 +459,20 @@ void Block::moveLinesFromBlock(Block *block, int start_line, int count)
 
 void Block::dispatchEvents()
 {
-    if (!m_changed) {
+    if (!m_changed)
         return;
-    }
 
     mergeCompatibleStyles();
 
-    for (int i = 0; i < m_style_list.size(); i++) {
+    for (int i = 0; i < m_style_spans.size(); i++) {
         ensureStyleAlignWithLines(i);
-        TextStyleLine &current_style = m_style_list[i];
-         if (current_style.text_segment == 0) {
-             current_style.text_segment = m_screen->createTextSegment(current_style);
+        TextStyleSpan &current_style = m_style_spans[i];
+        if (current_style.text_segment == 0) {
+            current_style.text_segment = m_screen->createTextSegment(current_style);
             current_style.text_segment->setLine(m_new_line, m_width, &m_text_line);
-         } else if (m_new_line != m_line) {
+        } else if (m_new_line != m_line) {
             current_style.text_segment->setLine(m_new_line, m_width, &m_text_line);
-         }
+        }
 
         if (current_style.style_dirty) {
             current_style.text_segment->setTextStyle(current_style);
@@ -494,43 +491,37 @@ void Block::dispatchEvents()
 
     m_changed = false;
     m_line = m_new_line;
-
 }
 
 void Block::releaseTextObjects()
 {
     m_changed = true;
-    for (int i = 0; i < m_style_list.size(); i++) {
-        TextStyleLine &currentStyleLine = m_style_list[i];
+    for (int i = 0; i < m_style_spans.size(); i++) {
+        TextStyleSpan &currentStyleLine = m_style_spans[i];
         currentStyleLine.releaseTextSegment(m_screen);
         currentStyleLine.text_dirty = true;
         currentStyleLine.style_dirty = true;
     }
 }
 
-QVector<TextStyleLine> Block::style_list()
-{
-    return m_style_list;
-}
-
-void Block::printStyleList() const
+void Block::printStyleSpans() const
 {
     QDebug debug = qDebug();
-    printStyleList(debug);
+    printStyleSpans(debug);
 }
 
-void Block::printStyleList(QDebug &debug) const
+void Block::printStyleSpans(QDebug &debug) const
 {
     debug << m_line << lineCount() << m_text_line.size() << (void *) this << '\t' << m_text_line;
-    for (int i= 0; i < m_style_list.size(); i++) {
-        debug << m_style_list.at(i);
+    for (int i= 0; i < m_style_spans.size(); i++) {
+        debug << m_style_spans.at(i);
     }
 }
 
-void Block::printStyleListWidthText() const
+void Block::printStyleSpansWidthText() const
 {
-    for (int i= 0; i < m_style_list.size(); i++) {
-        const TextStyleLine &currentStyle = m_style_list.at(i);
+    for (int i= 0; i < m_style_spans.size(); i++) {
+        const TextStyleSpan &currentStyle = m_style_spans.at(i);
         QDebug debug = qDebug();
         debug << m_text_line.mid(currentStyle.start_index, (currentStyle.end_index + 1) - currentStyle.start_index) << currentStyle;
     }
@@ -538,15 +529,15 @@ void Block::printStyleListWidthText() const
 
 void Block::mergeCompatibleStyles()
 {
-    for (int i = 1; i < m_style_list.size(); i++) {
-        TextStyleLine &current = m_style_list[i];
-        if (m_style_list.at(i - 1).isCompatible(current) &&
+    for (int i = 1; i < m_style_spans.size(); i++) {
+        TextStyleSpan &current = m_style_spans[i];
+        if (m_style_spans.at(i - 1).isCompatible(current) &&
                 current.start_index % m_width) {
-            TextStyleLine &prev = m_style_list[i-1];
+            TextStyleSpan &prev = m_style_spans[i-1];
             prev.end_index = current.end_index;
             prev.text_dirty = true;
             current.releaseTextSegment(m_screen);
-            m_style_list.remove(i);
+            m_style_spans.remove(i);
             i--;
         }
     }
@@ -554,12 +545,12 @@ void Block::mergeCompatibleStyles()
 
 void Block::ensureStyleAlignWithLines(int i)
 {
-    int start_line = m_style_list[i].start_index / m_width;
-    int end_line = m_style_list[i].end_index / m_width;
+    int start_line = m_style_spans[i].start_index / m_width;
+    int end_line = m_style_spans[i].end_index / m_width;
     if (start_line != end_line) {
-        int remainder_start_line = ((m_width * (start_line + 1))-1) - m_style_list[i].start_index;
-        int next_line_end_index = m_style_list[i].end_index;
-        m_style_list[i].end_index = m_style_list[i].start_index + remainder_start_line;
-        m_style_list.insert(i + 1, TextStyleLine(m_style_list[i], m_style_list[i].end_index + 1, next_line_end_index));
+        int remainder_start_line = ((m_width * (start_line + 1))-1) - m_style_spans[i].start_index;
+        int next_line_end_index = m_style_spans[i].end_index;
+        m_style_spans[i].end_index = m_style_spans[i].start_index + remainder_start_line;
+        m_style_spans.insert(i + 1, TextStyleSpan(m_style_spans[i], m_style_spans[i].end_index + 1, next_line_end_index));
     }
 }

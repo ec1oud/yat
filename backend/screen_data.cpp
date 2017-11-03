@@ -284,7 +284,7 @@ void ScreenData::printStyleInformation() const
             printRuler(debug);
         }
         QDebug debug = qDebug();
-        (*it)->printStyleList(debug);
+        (*it)->printStyleSpans(debug);
     }
     qDebug() << "On screen height" << m_height;
 }

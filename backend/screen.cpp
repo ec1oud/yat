@@ -602,7 +602,7 @@ YatPty *Screen::pty()
     return &m_pty;
 }
 
-Text *Screen::createTextSegment(const TextStyleLine &style_line)
+Text *Screen::createTextSegment(const TextStyleSpan &style_line)
 {
     Q_UNUSED(style_line);
     Text *to_return;

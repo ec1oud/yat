@@ -116,7 +116,7 @@ public:
     YatPty *pty();
 
     Q_INVOKABLE void ensureVisiblePages(int top_line);
-    Text *createTextSegment(const TextStyleLine &style_line);
+    Text *createTextSegment(const TextStyleSpan &style_line);
     void releaseTextSegment(Text *text);
 
 public slots:

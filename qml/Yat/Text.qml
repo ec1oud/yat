@@ -54,8 +54,6 @@ ObjectDestructItem {
             font.underline: objectHandle.underline
             latin: objectHandle.latin
 
-            onTextChanged: {
-            }
             SequentialAnimation {
                 running: objectHandle.blinking
                 loops: Animation.Infinite
