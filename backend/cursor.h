@@ -26,6 +26,7 @@
 
 #include "text_style.h"
 #include "screen.h"
+#include "graphical_block.h"
 
 #include <QtCore/QObject>
 
@@ -93,6 +94,7 @@ public:
 
     void setWrapAround(bool wrap);
     void addAtCursor(const QByteArray &text, bool only_latin = true);
+    void addAtCursor(GraphicalBlock *block);
     void insertAtCursor(const QByteArray &text, bool only_latin = true);
     void replaceAtCursor(const QByteArray &text, bool only_latin = true);
 

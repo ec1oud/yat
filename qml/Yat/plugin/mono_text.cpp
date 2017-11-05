@@ -151,6 +151,7 @@ QString MonoText::text() const
 void MonoText::setText(const QString &text)
 {
     if (m_text != text) {
+qDebug() << text;
         m_text = text;
         emit textChanged();
         polish();

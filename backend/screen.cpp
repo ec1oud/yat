@@ -46,18 +46,11 @@ Screen::Screen(QObject *parent)
     : QObject(parent)
     , m_palette(new ColorPalette(this))
     , m_parser(this)
-    , m_timer_event_id(0)
-    , m_width(1)
-    , m_height(0)
     , m_primary_data(new ScreenData(500, this))
     , m_alternate_data(new ScreenData(0, this))
     , m_current_data(m_primary_data)
     , m_old_current_data(m_primary_data)
     , m_selection(new Selection(this))
-    , m_flash(false)
-    , m_cursor_changed(false)
-    , m_application_cursor_key_mode(false)
-    , m_fast_scroll(true)
     , m_default_background(m_palette->normalColor(ColorPalette::DefaultBackground))
 {
     Cursor *cursor = new Cursor(this);
@@ -160,6 +153,24 @@ void Screen::setWidth(int width)
 int Screen::width() const
 {
     return m_width;
+}
+
+void Screen::setLineHeight(int lineHeight)
+{
+    if (m_lineHeight == lineHeight)
+        return;
+
+    m_lineHeight = lineHeight;
+    emit lineHeightChanged(m_lineHeight);
+}
+
+void Screen::setMonoFontWidth(int monoFontWidth)
+{
+    if (m_monoFontWidth == monoFontWidth)
+        return;
+
+    m_monoFontWidth = monoFontWidth;
+    emit monoFontWidthChanged(m_monoFontWidth);
 }
 
 void Screen::useAlternateScreenBuffer()

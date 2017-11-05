@@ -323,6 +323,11 @@ void Block::setWidth(int width)
     releaseTextObjects();
 }
 
+void Block::setLineCount(int8_t v)
+{
+    m_height = v;
+}
+
 void Block::setVisible(bool visible)
 {
     if (visible != m_visible) {
@@ -463,7 +468,6 @@ void Block::dispatchEvents()
         return;
 
     mergeCompatibleStyles();
-
     for (int i = 0; i < m_style_spans.size(); i++) {
         ensureStyleAlignWithLines(i);
         TextStyleSpan &current_style = m_style_spans[i];

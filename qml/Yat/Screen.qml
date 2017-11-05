@@ -33,13 +33,22 @@ Yat.TerminalScreen {
     property real fontWidth: fontMetricText.paintedWidth
     property real fontHeight: fontMetricText.paintedHeight
 
+    screen.lineHeight: fontHeight
+    screen.monoFontWidth: fontWidth
+
     font.family: screen.platformName != "cocoa" ? "monospace" : "menlo"
     anchors.fill: parent
     focus: true
 
     Component {
         id: textComponent
-        Yat.Text { }
+        Yat.Text {
+            onYChanged: console.log("@ " + y + " " + text)
+        }
+    }
+    Component {
+        id: imageComponent
+        Yat.Image { }
     }
     Component {
         id: cursorComponent
@@ -195,6 +204,7 @@ Yat.TerminalScreen {
         onReset: resetScreenItems();
 
         onTextCreated: {
+console.log("created " + text)
             var textSegment = textComponent.createObject(screenItem,
                 {
                     "parent" : textContainer,

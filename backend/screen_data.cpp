@@ -24,6 +24,7 @@
 #include "screen_data.h"
 
 #include "block.h"
+#include "graphical_block.h"
 #include "screen.h"
 #include "scrollback.h"
 #include "cursor.h"
@@ -32,6 +33,9 @@
 
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
+
+QHash<QString,const QImage*> ScreenData::m_images;
+int ScreenData::m_nextImageId(1);
 
 ScreenData::ScreenData(size_t max_scrollback, Screen *screen)
     : QObject(screen)
@@ -192,6 +196,14 @@ const CursorDiff ScreenData::insert(const QPoint &point, const QString &text, co
     return modify(point,text,style,false, only_latin);
 }
 
+const CursorDiff ScreenData::appendBlock(GraphicalBlock *block)
+{
+    m_screen_blocks.push_back(block);
+    if (block->id().isEmpty())
+        block->setIdNumeric(m_nextImageId++);
+    m_images.insert(block->id(), block->image());
+    return { block->lineCount(), 0 };
+}
 
 void ScreenData::moveLine(int from, int to)
 {

@@ -36,6 +36,7 @@
 #include <QtCore/QDebug>
 class Screen;
 class Scrollback;
+class GraphicalBlock;
 
 class CursorDiff
 {
@@ -67,6 +68,8 @@ public:
     const CursorDiff replace(const QPoint &pos, const QString &text, const TextStyle &style, bool only_latin);
     const CursorDiff insert(const QPoint &pos, const QString &text, const TextStyle &style, bool only_latin);
 
+    const CursorDiff appendBlock(GraphicalBlock *block);
+
     void moveLine(int from, int to);
     void insertLine(int insertAt, int topMargin);
 
@@ -90,6 +93,9 @@ public:
     bool it_is_end(std::list<Block *>::iterator it) const { return m_screen_blocks.end() == it; }
 
     const SelectionRange getDoubleClickSelectionRange(size_t character, size_t line);
+
+    static const QImage *imageById(QString id) { return m_images.value(id); }
+
 public slots:
     void setHeight(int height, int currentCursorLine);
     void setWidth(int width);
@@ -119,6 +125,9 @@ private:
     int m_old_total_lines;
 
     std::list<Block *> m_screen_blocks;
+
+    static QHash<QString,const QImage*> m_images;
+    static int m_nextImageId;
 };
 
 std::list<Block *>::iterator ScreenData::it_for_row(int row)

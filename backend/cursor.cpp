@@ -450,6 +450,18 @@ void Cursor::addAtCursor(const QByteArray &data, bool only_latin)
     }
 }
 
+void Cursor::addAtCursor(GraphicalBlock *block)
+{
+    screen_data()->appendBlock(block);
+    new_rx() = 0;
+    new_ry() += block->lineCount();
+    // TODO probably this check should be elsewhere when creating the block
+    if (new_y() >= m_screen_height)
+        new_ry() = m_screen_height - 1;
+    if (new_x() >= m_screen_width)
+        new_rx() = m_screen_width - 1;
+}
+
 void Cursor::replaceAtCursor(const QByteArray &data, bool only_latin)
 {
     const QString text = m_gl_text_codec->toUnicode(data);

@@ -11,17 +11,20 @@ SOURCES += \
           plugin/terminal_screen.cpp \
           plugin/object_destruct_item.cpp \
           plugin/mono_text.cpp \
+          plugin/inline_image_provider.cpp \
           plugin/yat_extension_plugin.cpp \
 
 HEADERS += \
           plugin/terminal_screen.h \
           plugin/object_destruct_item.h \
           plugin/mono_text.h \
+          plugin/inline_image_provider.h \
           plugin/yat_extension_plugin.h \
 
 OTHER_FILES = \
               qmldir \
               Cursor.qml \
+              Image.qml \
               Text.qml \
               Screen.qml \
               Selection.qml

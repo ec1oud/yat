@@ -206,9 +206,12 @@ void Parser::addData(const QByteArray &data)
                 m_regis_mode = ReGISEsc;
             } else if (m_regis_mode == ReGISEsc) {
                 if (character == C1_7bit::ST) {
-                    m_regis_image.image().save(QLatin1String("/tmp/regis-out.png"));
+                    GraphicalBlock *block = new GraphicalBlock(m_screen);
+                    block->setImage(m_regis_image.image()); // TODO have ReGIS parser/renderer render into an image owned elsewhere, instead of copying
+                    m_screen->currentCursor()->addAtCursor(block); // TODO does adding at the cursor make sense?
+//                    m_regis_image.image().save(QLatin1String("/tmp/regis-out.png"));
                     m_regis_mode = ReGISNone;
-                    qCDebug(lcParser) << "exited ReGIS mode, saved image to /tmp/regis-out.png";
+                    qCDebug(lcParser) << "exited ReGIS mode";
                     tokenFinished();
                 }
             } else {

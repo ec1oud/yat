@@ -35,7 +35,7 @@ class Block
 {
 public:
     Block(Screen *screen);
-    ~Block();
+    virtual ~Block();
 
     Q_INVOKABLE Screen *screen() const;
 
@@ -64,12 +64,13 @@ public:
 
     int width() const { return m_width; }
     void setWidth(int width);
-    int lineCount() const { return (std::max((m_text_line.size() - 1),0) / m_width) + 1; }
+    int lineCount() const { return m_height ? m_height : (std::max((m_text_line.size() - 1),0) / m_width) + 1; }
     int lineCountAfterModified(int from_char, int text_size, bool replace) {
         int new_size = replace ? std::max(from_char + text_size, m_text_line.size())
             : std::max(from_char, m_text_line.size()) + text_size;
         return ((new_size - 1) / m_width) + 1;
     }
+    void setLineCount(int8_t v);
 
     void setVisible(bool visible);
     bool visible() const;
@@ -80,7 +81,7 @@ public:
 
     void moveLinesFromBlock(Block *block, int start_line, int count);
 
-    void dispatchEvents();
+    virtual void dispatchEvents();
     void releaseTextObjects();
 
     QVector<TextStyleSpan> styleSpans() { return m_style_spans; }
@@ -88,17 +89,18 @@ public:
     void printStyleSpans(QDebug &debug) const;
     void printStyleSpansWidthText() const;
 
-private:
+protected:
     void mergeCompatibleStyles();
     void ensureStyleAlignWithLines(int i);
     Screen *m_screen;
-    QString m_text_line; // just the text of this line
+    QString m_text_line; // just the text of this line; or for an image, the ID
     QVector<TextStyleSpan> m_style_spans; // styled character ranges
     size_t m_line;
     size_t m_new_line;
     int m_screen_index;
 
     int16_t m_width;
+    int8_t m_height = 0; // 0 means we're storing wrappable text; another value means this is a rectangular block
 
     bool m_visible : 1;
     bool m_changed : 1;

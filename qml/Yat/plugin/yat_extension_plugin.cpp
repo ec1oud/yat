@@ -34,6 +34,7 @@
 #include "cursor.h"
 #include "mono_text.h"
 #include "selection.h"
+#include "inline_image_provider.h"
 
 static const struct {
     const char *type;
@@ -41,6 +42,7 @@ static const struct {
 } qmldir [] = {
     { "Screen", 1, 0},
     { "Text", 1, 0},
+    { "Image", 1, 0},
     { "Cursor", 1, 0},
     { "Selection", 1, 0},
 };
@@ -64,5 +66,5 @@ void YatExtensionPlugin::registerTypes(const char *uri)
 void YatExtensionPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 {
     Q_UNUSED(uri);
-    Q_UNUSED(engine);
+    engine->addImageProvider("inlineimage", new InlineImageProvider);
 }

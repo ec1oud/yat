@@ -37,6 +37,7 @@
 #include <QtCore/QElapsedTimer>
 
 class Block;
+class GraphicalBlock;
 class Cursor;
 class Text;
 class ScreenData;
@@ -49,6 +50,8 @@ class Screen : public QObject
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int contentHeight READ contentHeight NOTIFY contentHeightChanged)
+    Q_PROPERTY(int lineHeight READ lineHeight WRITE setLineHeight NOTIFY lineHeightChanged)
+    Q_PROPERTY(int monoFontWidth READ monoFontWidth WRITE setMonoFontWidth NOTIFY monoFontWidthChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY screenTitleChanged)
     Q_PROPERTY(Selection *selection READ selection CONSTANT)
     Q_PROPERTY(QColor defaultBackgroundColor READ defaultBackgroundColor NOTIFY defaultBackgroundColorChanged)
@@ -66,6 +69,11 @@ public:
     void emitRequestWidth(int newWidth);
     void setWidth(int width);
     int width() const;
+
+    int lineHeight() const { return m_lineHeight; }
+    void setLineHeight(int lineHeight);
+    int monoFontWidth() const { return m_monoFontWidth; }
+    void setMonoFontWidth(int monoFontWidth);
 
     ScreenData *currentScreenData() const { return m_current_data; }
     void useAlternateScreenBuffer();
@@ -122,6 +130,7 @@ public:
 public slots:
     void readData(const QByteArray &data);
     void paletteChanged();
+
 signals:
     void reset();
 
@@ -133,6 +142,7 @@ signals:
     void screenTitleChanged();
 
     void textCreated(Text *text);
+    void graphicalBlockCreated(GraphicalBlock *block);
     void cursorCreated(Cursor *cursor);
 
     void requestHeightChange(int newHeight);
@@ -148,8 +158,11 @@ signals:
     void dataHeightChanged(int newHeight, int removedBeginning, int reclaimed);
     void widthAboutToChange(int width);
     void dataWidthChanged(int newWidth, int removedBeginning, int reclaimed);
+    void lineHeightChanged(int lineHeight);
+    void monoFontWidthChanged(int monoFontWidth);
 
     void hangup();
+
 protected:
     void timerEvent(QTimerEvent *);
 
@@ -160,9 +173,11 @@ private:
     QElapsedTimer m_time_since_parsed;
     QElapsedTimer m_time_since_initiated;
 
-    int m_timer_event_id;
-    int m_width;
-    int m_height;
+    int m_timer_event_id = 0;
+    int m_width = 1;
+    int m_height = 0;
+    int m_lineHeight = 12;
+    int m_monoFontWidth = 8;
 
     ScreenData *m_primary_data;
     ScreenData *m_alternate_data;
@@ -177,10 +192,10 @@ private:
 
     Selection *m_selection;
 
-    bool m_flash;
-    bool m_cursor_changed;
-    bool m_application_cursor_key_mode;
-    bool m_fast_scroll;
+    bool m_flash = false;
+    bool m_cursor_changed = false;
+    bool m_application_cursor_key_mode = false;
+    bool m_fast_scroll = true;
 
     QVector<Text *> m_to_delete;
 
